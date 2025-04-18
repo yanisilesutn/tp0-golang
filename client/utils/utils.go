@@ -34,24 +34,46 @@ func IniciarConfiguracion(filePath string) *globals.Config {
 	return config
 }
 
-func LeerConsola() {
+func LeerConsola() []string {
 	// Leer de la consola
 	reader := bufio.NewReader(os.Stdin)
-	log.Println("Ingrese los mensajes")
-	text, _ := reader.ReadString('\n')
-	log.Print(text)
+	var mensajes []string //declaro
+
+	log.Println("Ingrese los mensajes, para finalizar ingrese fin")
+
+	for {
+		text, _ := reader.ReadString('\n')
+
+		text = string(bytes.TrimSpace([]byte(text))) // Eliminar el salto de línea
+
+		log.Print(text)
+
+		if text == "fin" {
+			break
+		}
+		mensajes = append(mensajes, text) //agrego text al vector
+	}
+
+	return mensajes
+
 }
 
 func GenerarYEnviarPaquete() {
-	paquete := Paquete{}
+
+	valores := LeerConsola()
+	paquete := Paquete{Valores: valores}
 	// Leemos y cargamos el paquete
 
-	log.Printf("paqute a enviar: %+v", paquete)
-	// Enviamos el paqute
+	log.Printf("paquete a enviar: %+v", paquete)
+	// Enviamos el paquete
+
+	EnviarPaquete(globals.ClientConfig.Ip, globals.ClientConfig.Puerto, paquete)
+
 }
 
 func EnviarMensaje(ip string, puerto int, mensajeTxt string) {
 	mensaje := Mensaje{Mensaje: mensajeTxt}
+
 	body, err := json.Marshal(mensaje)
 	if err != nil {
 		log.Printf("error codificando mensaje: %s", err.Error())
